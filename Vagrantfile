@@ -1,5 +1,9 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+$script = <<-SCRIPT
+echo "I like Vagrant"
+echo "I love Linux"
+date > ~/vagrant_provisioned_at
+
+SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.box ="ubuntu/bionic64"
@@ -10,21 +14,21 @@ Vagrant.configure("2") do |config|
 
   # Configure provisioners on the machine
   config.vm.provision :docker
-  config.vm.provision :docker_compose
-
-  config.vm.define "server-1" do |server1|
-    server1.vm.network "private_network", ip: '192.168.33.50'
-    server1.vm.hostname = "server-1"
-    server1.vm.provision "shell", inline: <<-SHELL
-      apt-get -y update
-      apt-get -y install nginx
-      service nginx start
-    SHELL
+  config.vm.provision :shell, path: "bootstrap.sh"
+  config.vm.provision :file, source: "file.txt", destination: "file.txt"
+  
+  config.vm.define "server-1" do |dockerserver|
+    dockerserver.vm.network "private_network", ip: '192.168.33.60'
+    dockerserver.vm.hostname = "dockerserver"
+    config.vm.provision :file, source: "Folder", destination: "Folder"
+    dockerserver.vm.provision "shell", inline: "echo Hi Class!"
+    dockerserver.vm.provision "shell", inline: $script
+    dockerserver.vm.provision "shell" do |s|
+      s.inline = "echo $1"
+      s.args = ["AT", "Class!"]
+      end
+     dockerserver.vm.provision "docker" do |d|
+      d.run "hello-world"
+      end
   end
-
-  config.vm.define "server-2" do |server2|
-    server2.vm.network "private_network", ip: '192.168.33.51'
-    server2.vm.hostname = "server-2"
-  end
-
 end
