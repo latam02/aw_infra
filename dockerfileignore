@@ -1,0 +1,9 @@
+.dockerfileignore
+build
+.gradle
+.gitignore
+README.md
+.git
+Dockerfile
+docker-compose.ci.yml
+
